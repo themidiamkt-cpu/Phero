@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { canAddStudent, generateInviteCode, normalizeInviteCode } from "@/lib/trainer-invite";
 
 type RegisterPayload = {
@@ -21,6 +22,7 @@ const inviteSchemaError = "Banco ainda sem os campos de convite do personal. Rod
 export async function POST(request: Request) {
   const payload = (await request.json()) as RegisterPayload;
   const admin = createAdminClient();
+  const supabase = await createClient();
 
   if (!admin) {
     return NextResponse.json({ ok: false, error: "Supabase admin nao configurado." }, { status: 500 });
@@ -78,16 +80,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Este personal atingiu o limite de 2 alunos gratuitos. Ele precisa ativar a assinatura da plataforma." }, { status: 402 });
     }
 
-    const { data: createdUser, error: userError } = await admin.auth.admin.createUser({
+    const { data: createdUser, error: userError } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: true,
-      user_metadata: { full_name: fullName, role: "student", consent_lgpd: true },
+      options: {
+        data: { full_name: fullName, role: "student", consent_lgpd: true },
+      },
     });
 
     if (userError || !createdUser.user) {
       return NextResponse.json({ ok: false, error: userError?.message ?? "Nao foi possivel criar usuario." }, { status: 500 });
     }
+
+    await supabase.auth.signOut();
 
     const { data: profile, error: profileError } = await admin
       .from("profiles")
@@ -122,19 +127,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: studentError?.message ?? "Nao foi possivel criar aluno." }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, role: "aluno", id: student.id });
+    return NextResponse.json({ ok: true, role: "aluno", id: student.id, requiresEmailConfirmation: true });
   }
 
-  const { data: createdUser, error: userError } = await admin.auth.admin.createUser({
+  const { data: createdUser, error: userError } = await supabase.auth.signUp({
     email,
     password,
-    email_confirm: true,
-    user_metadata: { full_name: fullName, role: "trainer", consent_lgpd: true },
+    options: {
+      data: { full_name: fullName, role: "trainer", consent_lgpd: true },
+    },
   });
 
   if (userError || !createdUser.user) {
     return NextResponse.json({ ok: false, error: userError?.message ?? "Nao foi possivel criar usuario." }, { status: 500 });
   }
+
+  await supabase.auth.signOut();
 
   const { data: profile, error: profileError } = await admin
     .from("profiles")
@@ -178,5 +186,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: trainerError?.message ?? "Nao foi possivel criar personal." }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, role: "personal", id: trainer.id, inviteCode: trainer.invite_code });
+  return NextResponse.json({ ok: true, role: "personal", id: trainer.id, inviteCode: trainer.invite_code, requiresEmailConfirmation: true });
 }

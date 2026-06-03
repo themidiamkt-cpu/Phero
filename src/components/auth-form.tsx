@@ -16,6 +16,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [trainerCode, setTrainerCode] = useState("");
   const [consentLgpd, setConsentLgpd] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   function mapSupabaseRole(role: unknown): UserRole | undefined {
@@ -40,6 +41,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     event?.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     setError("");
+    setSuccess("");
 
     if (mode === "register") {
       if (!fullName.trim() || !normalizedEmail || !phone.trim() || !password) {
@@ -79,10 +81,16 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             consentLgpd,
           }),
         });
-        const registerResult = (await registerResponse.json()) as { ok?: boolean; error?: string };
+        const registerResult = (await registerResponse.json()) as { ok?: boolean; error?: string; requiresEmailConfirmation?: boolean };
 
         if (!registerResponse.ok || !registerResult.ok) {
           setError(registerResult.error ?? "Nao foi possivel criar conta.");
+          return;
+        }
+
+        if (registerResult.requiresEmailConfirmation) {
+          setSuccess("Conta criada. Confirme seu email antes de entrar no Phero.");
+          setPassword("");
           return;
         }
       }
@@ -166,8 +174,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               </label>
             ) : null}
             {error ? <p className="text-sm font-semibold text-[#ffb4ae]">{error}</p> : null}
+            {success ? <p className="rounded-[14px] border border-emerald-300/40 bg-emerald-400/12 p-3 text-sm font-semibold text-emerald-100">{success}</p> : null}
             <button disabled={loading} className="pressable mt-1 h-14 rounded-[16px] bg-[var(--blue)] text-[16px] font-bold text-white shadow-[0_12px_30px_rgba(10,132,255,.36)] transition hover:bg-[var(--blue-ink)] disabled:opacity-60">
-              {loading ? "Entrando..." : mode === "login" ? "Entrar" : "Cadastrar"}
+              {loading ? (mode === "login" ? "Entrando..." : "Criando...") : mode === "login" ? "Entrar" : "Cadastrar"}
             </button>
           </form>
 
