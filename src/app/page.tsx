@@ -10,6 +10,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 
 const trainerFeatures = [
   "Cadastro e acompanhamento de alunos",
@@ -34,113 +35,122 @@ const workflow = [
 export default function Home() {
   return (
     <main className="min-h-dvh bg-[#f4f7fb] text-[#101217]">
-      <section className="relative min-h-[92dvh] overflow-hidden bg-[linear-gradient(135deg,#eaf3ff_0%,#ffffff_42%,#eef7f2_100%)]">
-        <div className="absolute inset-x-0 top-0 h-px bg-white/80" />
-        <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3" aria-label="Phero">
+      <section className="relative overflow-hidden bg-[#07111f]">
+        <header className="absolute inset-x-0 top-0 z-40 mx-auto flex max-w-7xl items-center justify-between px-6 py-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-3 text-white" aria-label="Phero">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/phero-logo-transparent.png" alt="" className="size-11 object-contain drop-shadow-[0_10px_20px_rgba(10,132,255,.22)]" />
+            <img src="/phero-logo-transparent.png" alt="" className="size-11 object-contain drop-shadow-[0_10px_20px_rgba(10,132,255,.35)]" />
             <span className="text-lg font-bold tracking-[-0.03em]">Phero</span>
           </Link>
-          <nav className="hidden items-center gap-8 text-sm font-semibold text-neutral-600 md:flex">
+          <nav className="hidden items-center gap-8 text-sm font-semibold text-white/78 md:flex">
             <a href="#personal">Personal</a>
             <a href="#aluno">Aluno</a>
             <a href="#fluxo">Fluxo</a>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="rounded-full px-4 py-2 text-sm font-bold text-neutral-700 transition hover:bg-white/70">
+            <Link href="/login" className="rounded-full px-4 py-2 text-sm font-bold text-white/86 transition hover:bg-white/10">
               Entrar
             </Link>
-            <Link href="/register" className="pressable hidden rounded-full bg-[var(--blue)] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(10,132,255,.28)] sm:inline-flex">
+            <Link href="/register" className="pressable hidden rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#07111f] shadow-[0_12px_30px_rgba(0,0,0,.20)] sm:inline-flex">
               Criar conta
             </Link>
           </div>
         </header>
 
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-16 pt-8 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 lg:pb-20 lg:pt-10">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/75 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--blue-ink)] shadow-sm backdrop-blur">
-              <ShieldCheck className="size-4" />
-              Gestao para personal e aluno
+        <ScrollExpandMedia
+          mediaType="image"
+          mediaSrc="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1280&auto=format&fit=crop"
+          bgImageSrc="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop"
+          title="Phero App"
+          date="Gestao para personal e aluno"
+          scrollToExpand="Role para expandir"
+          textBlend
+        >
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.92fr_1.08fr]">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/75 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--blue-ink)] shadow-sm backdrop-blur">
+                <ShieldCheck className="size-4" />
+                Plataforma completa
+              </div>
+              <h1 className="mt-7 text-5xl font-bold leading-[0.96] tracking-[-0.05em] text-[#0f1117] md:text-7xl">
+                Treinos, alunos e financeiro em um app so.
+              </h1>
+              <p className="mt-7 max-w-xl text-lg font-medium leading-8 text-neutral-600">
+                O Phero conecta o personal e o aluno em uma rotina simples: prescricao, acompanhamento, evolucao, chat e pagamentos com tudo organizado no mesmo lugar.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Link href="/register" className="pressable inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[var(--blue)] px-7 text-base font-bold text-white shadow-[0_18px_36px_rgba(10,132,255,.30)]">
+                  Comecar agora
+                  <ArrowRight className="size-5" />
+                </Link>
+                <Link href="/login" className="pressable inline-flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/80 px-7 text-base font-bold text-neutral-800 shadow-sm backdrop-blur">
+                  Acessar minha conta
+                </Link>
+              </div>
             </div>
-            <h1 className="mt-7 text-5xl font-bold leading-[0.96] tracking-[-0.05em] text-[#0f1117] md:text-7xl">
-              Treinos, alunos e financeiro em um app so.
-            </h1>
-            <p className="mt-7 max-w-xl text-lg font-medium leading-8 text-neutral-600">
-              O Phero conecta o personal e o aluno em uma rotina simples: prescricao, acompanhamento, evolucao, chat e pagamentos com tudo organizado no mesmo lugar.
-            </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link href="/register" className="pressable inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[var(--blue)] px-7 text-base font-bold text-white shadow-[0_18px_36px_rgba(10,132,255,.30)]">
-                Comecar agora
-                <ArrowRight className="size-5" />
-              </Link>
-              <Link href="/login" className="pressable inline-flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/80 px-7 text-base font-bold text-neutral-800 shadow-sm backdrop-blur">
-                Acessar minha conta
-              </Link>
-            </div>
-          </div>
 
-          <div className="relative">
-            <div className="rounded-[28px] border border-white/80 bg-white/78 p-4 shadow-[0_34px_90px_rgba(16,18,24,.16)] backdrop-blur-xl">
-              <div className="rounded-[20px] border border-[#dde7f4] bg-[#f7f9fc] p-5">
-                <div className="flex items-center justify-between gap-4 border-b border-[#e3e8ef] pb-4">
-                  <div className="flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/phero-logo-transparent.png" alt="" className="size-12 object-contain" />
-                    <div>
-                      <p className="text-sm font-bold">Painel Phero</p>
-                      <p className="text-xs font-semibold text-neutral-500">Visao do personal</p>
+            <div className="relative">
+              <div className="rounded-[28px] border border-white/80 bg-white/78 p-4 shadow-[0_34px_90px_rgba(16,18,24,.16)] backdrop-blur-xl">
+                <div className="rounded-[20px] border border-[#dde7f4] bg-[#f7f9fc] p-5">
+                  <div className="flex items-center justify-between gap-4 border-b border-[#e3e8ef] pb-4">
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/phero-logo-transparent.png" alt="" className="size-12 object-contain" />
+                      <div>
+                        <p className="text-sm font-bold">Painel Phero</p>
+                        <p className="text-xs font-semibold text-neutral-500">Visao do personal</p>
+                      </div>
                     </div>
+                    <div className="rounded-full bg-[var(--green-wash)] px-3 py-1 text-xs font-bold text-[var(--green)]">Ativo</div>
                   </div>
-                  <div className="rounded-full bg-[var(--green-wash)] px-3 py-1 text-xs font-bold text-[var(--green)]">Ativo</div>
-                </div>
 
-                <div className="mt-5 grid gap-4 lg:grid-cols-[0.66fr_0.34fr]">
-                  <div className="grid gap-4">
-                    <div className="rounded-[8px] bg-[#0e2034] p-5 text-white">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-[0.13em] text-white/50">Hoje</p>
-                          <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em]">7 alunos em acompanhamento</h2>
+                  <div className="mt-5 grid gap-4 lg:grid-cols-[0.66fr_0.34fr]">
+                    <div className="grid gap-4">
+                      <div className="rounded-[8px] bg-[#0e2034] p-5 text-white">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.13em] text-white/50">Hoje</p>
+                            <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em]">7 alunos em acompanhamento</h2>
+                          </div>
+                          <Activity className="size-6 text-[var(--green)]" />
                         </div>
-                        <Activity className="size-6 text-[var(--green)]" />
+                        <div className="mt-6 h-2 rounded-full bg-white/10">
+                          <div className="h-2 w-[82%] rounded-full bg-[var(--green)]" />
+                        </div>
+                        <p className="mt-3 text-sm font-semibold text-white/62">82% de adesao na semana</p>
                       </div>
-                      <div className="mt-6 h-2 rounded-full bg-white/10">
-                        <div className="h-2 w-[82%] rounded-full bg-[var(--green)]" />
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <PreviewMetric label="Treinos" value="38" tone="blue" />
+                        <PreviewMetric label="Pagos" value="18" tone="green" />
+                        <PreviewMetric label="Pend." value="3" tone="amber" />
                       </div>
-                      <p className="mt-3 text-sm font-semibold text-white/62">82% de adesao na semana</p>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      <PreviewMetric label="Treinos" value="38" tone="blue" />
-                      <PreviewMetric label="Pagos" value="18" tone="green" />
-                      <PreviewMetric label="Pend." value="3" tone="amber" />
+                    <div className="grid gap-3">
+                      <PreviewTask icon={<Users className="size-5" />} title="Roberto Franca" detail="Treino atualizado" />
+                      <PreviewTask icon={<Wallet className="size-5" />} title="Comprovante" detail="Aguardando analise" />
+                      <PreviewTask icon={<MessageCircle className="size-5" />} title="Chat" detail="2 mensagens novas" />
                     </div>
-                  </div>
-
-                  <div className="grid gap-3">
-                    <PreviewTask icon={<Users className="size-5" />} title="Roberto Franca" detail="Treino atualizado" />
-                    <PreviewTask icon={<Wallet className="size-5" />} title="Comprovante" detail="Aguardando analise" />
-                    <PreviewTask icon={<MessageCircle className="size-5" />} title="Chat" detail="2 mensagens novas" />
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="absolute -bottom-10 right-6 hidden w-56 rounded-[30px] border border-white/80 bg-[#111114] p-3 shadow-[0_28px_70px_rgba(16,18,24,.30)] xl:block">
-              <div className="rounded-[24px] bg-white p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.13em] text-neutral-400">Aluno</p>
-                <h3 className="mt-2 text-xl font-bold tracking-[-0.04em]">Treino do dia</h3>
-                <div className="mt-4 rounded-[8px] bg-[var(--blue-wash)] p-3">
-                  <Dumbbell className="size-5 text-[var(--blue)]" />
-                  <p className="mt-3 text-sm font-bold">Forca inferior</p>
-                  <p className="mt-1 text-xs font-semibold text-neutral-500">45 min · 6 exercicios</p>
+              <div className="absolute -bottom-10 right-6 hidden w-56 rounded-[30px] border border-white/80 bg-[#111114] p-3 shadow-[0_28px_70px_rgba(16,18,24,.30)] xl:block">
+                <div className="rounded-[24px] bg-white p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.13em] text-neutral-400">Aluno</p>
+                  <h3 className="mt-2 text-xl font-bold tracking-[-0.04em]">Treino do dia</h3>
+                  <div className="mt-4 rounded-[8px] bg-[var(--blue-wash)] p-3">
+                    <Dumbbell className="size-5 text-[var(--blue)]" />
+                    <p className="mt-3 text-sm font-bold">Forca inferior</p>
+                    <p className="mt-1 text-xs font-semibold text-neutral-500">45 min · 6 exercicios</p>
+                  </div>
+                  <div className="mt-3 h-11 rounded-full bg-[var(--blue)] text-center text-sm font-bold leading-[44px] text-white">Iniciar</div>
                 </div>
-                <div className="mt-3 h-11 rounded-full bg-[var(--blue)] text-center text-sm font-bold leading-[44px] text-white">Iniciar</div>
               </div>
             </div>
           </div>
-        </div>
+        </ScrollExpandMedia>
       </section>
 
       <section id="personal" className="mx-auto grid max-w-7xl gap-8 px-6 py-20 lg:grid-cols-2 lg:px-8">
