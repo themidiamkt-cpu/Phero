@@ -7,7 +7,6 @@ import {
   exercises,
   payments,
   students,
-  trainers,
   workouts,
 } from "@/lib/mock-data";
 import type { BodyAssessment, Exercise, Payment, Plan, Student, Subscription, Trainer, Workout, WorkoutSet } from "@/lib/types";
@@ -127,7 +126,7 @@ export async function getStudentsData(): Promise<Student[]> {
 
 export async function getTrainersData(): Promise<Trainer[]> {
   const supabase = createAdminClient();
-  if (!supabase) return trainers;
+  if (!supabase) return [];
 
   let { data, error } = await supabase
     .from("trainers")
