@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, BarChart3, BookOpen, Dumbbell, Home, Library, MessageCircle, User, Users, Wallet } from "lucide-react";
+import { OnboardingTour } from "@/components/onboarding-tour";
 import { alunoNav, personalNav } from "@/lib/routes";
 import { cn, PhoneFrame } from "@/components/ui";
 import type { UserRole } from "@/lib/types";
@@ -32,6 +33,7 @@ export function MobileAppShell({
 
   return (
     <PhoneFrame>
+      <OnboardingTour role={role} />
       <div className="flex min-h-dvh flex-col">
         <div className="fit-screen flex-1 pb-24">{children}</div>
         <nav
