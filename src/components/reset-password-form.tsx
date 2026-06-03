@@ -107,7 +107,11 @@ export function ResetPasswordForm() {
             <Field icon={<Lock className="size-4" />} placeholder="Nova senha" value={password} onChange={setPassword} disabled={!ready || Boolean(message)} />
             <Field icon={<Lock className="size-4" />} placeholder="Confirmar nova senha" value={confirmPassword} onChange={setConfirmPassword} disabled={!ready || Boolean(message)} />
             {error ? <p className="text-sm font-semibold text-[#ffb4ae]">{error}</p> : null}
-            {message ? <p className="rounded-[14px] border border-emerald-300/40 bg-emerald-400/12 p-3 text-sm font-semibold text-emerald-100">{message}</p> : null}
+            {message ? (
+              <p className="rounded-[14px] border border-emerald-200 bg-emerald-50 p-3 text-sm font-bold leading-6 text-emerald-950">
+                {message}
+              </p>
+            ) : null}
             <button
               disabled={!ready || loading || Boolean(message)}
               className="pressable mt-1 h-14 rounded-[16px] bg-[var(--blue)] text-[16px] font-bold text-white shadow-[0_12px_30px_rgba(10,132,255,.36)] transition hover:bg-[var(--blue-ink)] disabled:opacity-60"
