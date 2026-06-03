@@ -1,14 +1,59 @@
 import type { ReactNode } from "react";
 import { Activity, CreditCard, Users, UserCheck } from "lucide-react";
-import { Badge, Card } from "@/components/ui";
-import { students, trainers, workouts } from "@/lib/mock-data";
+import { Badge, Card, ProgressBar } from "@/components/ui";
+import { getMvpData } from "@/lib/data";
+import type { Payment } from "@/lib/types";
 
-const chartPoints = "6,86 22,78 38,72 54,56 70,48 86,36 102,30";
+export const dynamic = "force-dynamic";
 
-export default function AdminDashboardPage() {
-  const activeTrainers = trainers.filter((trainer) => trainer.approved && !trainer.blocked).length;
-  const activeStudents = students.filter((student) => student.accessStatus === "active").length;
-  const activeWorkouts = workouts.filter((workout) => workout.status !== "done").length;
+const money = new Intl.NumberFormat("pt-BR", {
+  currency: "BRL",
+  maximumFractionDigits: 0,
+  style: "currency",
+});
+
+const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "short" });
+
+function monthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function paymentMonthKey(payment: Payment) {
+  const date = new Date(`${payment.dueDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "";
+  return monthKey(date);
+}
+
+function getLastSevenMonths(payments: Payment[]) {
+  const now = new Date();
+  const buckets = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (6 - index), 1);
+    return {
+      key: monthKey(date),
+      label: monthLabel.format(date).replace(".", ""),
+      total: 0,
+    };
+  });
+
+  for (const payment of payments) {
+    const bucket = buckets.find((item) => item.key === paymentMonthKey(payment));
+    if (bucket) bucket.total += payment.amount;
+  }
+
+  return buckets;
+}
+
+export default async function AdminDashboardPage() {
+  const data = await getMvpData();
+  const activeTrainers = data.trainers.filter((trainer) => trainer.approved && !trainer.blocked).length;
+  const pendingTrainers = data.trainers.filter((trainer) => !trainer.approved).length;
+  const activeStudents = data.students.filter((student) => student.accessStatus === "active").length;
+  const blockedStudents = data.students.filter((student) => student.accessStatus === "blocked").length;
+  const activeWorkouts = data.workouts.filter((workout) => workout.status !== "done").length;
+  const approvedPayments = data.payments.filter((payment) => payment.status === "approved" || payment.status === "paid");
+  const pendingPayments = data.payments.filter((payment) => payment.status === "waiting_analysis" || payment.status === "pending_review").length;
+  const monthlyRevenue = getLastSevenMonths(approvedPayments);
+  const totalRevenue = approvedPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
   return (
     <div className="mx-auto max-w-md px-5 pb-10 pt-7">
@@ -28,29 +73,12 @@ export default function AdminDashboardPage() {
       <section className="grid grid-cols-2 gap-3">
         <Metric icon={<UserCheck className="size-5" />} label="Personais" value={String(activeTrainers)} detail="Ativos na plataforma" />
         <Metric icon={<Users className="size-5" />} label="Alunos" value={String(activeStudents)} detail="Com acesso liberado" />
-        <Metric icon={<CreditCard className="size-5" />} label="Receita plataf." value="R$ 0" detail="Billing real" />
+        <Metric icon={<CreditCard className="size-5" />} label="Pagamentos" value={money.format(totalRevenue)} detail="Aprovados no banco" />
         <Metric icon={<Activity className="size-5" />} label="Novos 30d" value={String(activeWorkouts)} detail="Treinos ativos" />
       </section>
 
       <section className="mt-6 grid gap-5">
-        <Card className="p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="lbl">Receita recorrente</p>
-              <h2 className="mt-2 text-xl font-bold text-[var(--ink)]">Ultimos 7 meses</h2>
-            </div>
-            <Badge tone="blue">SaaS</Badge>
-          </div>
-
-          <svg viewBox="0 0 108 112" className="mt-8 h-56 w-full" aria-label="Grafico de atividade semanal">
-            <path d="M6 96 L22 78 L38 72 L54 56 L70 48 L86 36 L102 30 L102 100 L6 100 Z" fill="rgba(10,132,255,.12)" />
-            <line x1="6" x2="102" y1="96" y2="96" stroke="#e7e7eb" strokeWidth="1" />
-            <line x1="6" x2="102" y1="64" y2="64" stroke="#efeff2" strokeWidth="1" />
-            <line x1="6" x2="102" y1="32" y2="32" stroke="#efeff2" strokeWidth="1" />
-            <polyline points={chartPoints} fill="none" stroke="#0A84FF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-            <circle cx="102" cy="30" r="3" fill="#0A84FF" stroke="#fff" strokeWidth="2" />
-          </svg>
-        </Card>
+        <RevenueCard months={monthlyRevenue} total={totalRevenue} />
 
         <Card className="p-0">
           <div className="border-b border-[var(--hair)] p-5">
@@ -58,14 +86,54 @@ export default function AdminDashboardPage() {
             <h2 className="mt-2 text-xl font-bold text-[var(--ink)]">Status da operacao</h2>
           </div>
           <div className="divide-y divide-[var(--hair)]">
-            <QueueRow title="Personais pendentes" detail="Aguardando aprovacao ou assinatura" value="0" />
-            <QueueRow title="Alunos bloqueados" detail="Dependem de liberacao do personal" value="0" />
-            <QueueRow title="Comprovantes" detail="Pagamentos em analise manual" value="0" />
-            <QueueRow title="Treinos globais" detail="Modelos prontos para revisar" value="8" />
+            <QueueRow title="Personais pendentes" detail="Aguardando aprovacao" value={String(pendingTrainers)} />
+            <QueueRow title="Alunos bloqueados" detail="Dependem de liberacao do personal" value={String(blockedStudents)} />
+            <QueueRow title="Comprovantes" detail="Pagamentos em analise manual" value={String(pendingPayments)} />
+            <QueueRow title="Treinos ativos" detail="Criados no banco" value={String(activeWorkouts)} />
           </div>
         </Card>
       </section>
     </div>
+  );
+}
+
+function RevenueCard({ months, total }: { months: Array<{ key: string; label: string; total: number }>; total: number }) {
+  const max = Math.max(...months.map((month) => month.total), 0);
+  const hasRevenue = total > 0;
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="lbl">Receita registrada</p>
+          <h2 className="mt-2 text-xl font-bold text-[var(--ink)]">Ultimos 7 meses</h2>
+        </div>
+        <Badge tone={hasRevenue ? "blue" : "neutral"}>{hasRevenue ? "Real" : "Sem dados"}</Badge>
+      </div>
+
+      {hasRevenue ? (
+        <div className="mt-7 grid gap-4">
+          <div>
+            <p className="mono tnum text-3xl font-bold text-[var(--ink)]">{money.format(total)}</p>
+            <p className="mt-1 text-sm font-medium text-[var(--ink-3)]">Soma dos pagamentos aprovados neste periodo.</p>
+          </div>
+          <div className="grid gap-3">
+            {months.map((month) => (
+              <div key={month.key} className="grid grid-cols-[38px_1fr_70px] items-center gap-3">
+                <span className="mono text-xs font-bold uppercase text-[var(--ink-3)]">{month.label}</span>
+                <ProgressBar value={max ? (month.total / max) * 100 : 0} />
+                <span className="mono tnum text-right text-xs font-bold text-[var(--ink)]">{money.format(month.total)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-8 rounded-[18px] border border-dashed border-[var(--hair)] bg-[var(--surface-2)] p-6 text-center">
+          <p className="text-base font-bold text-[var(--ink)]">Nenhuma receita aprovada ainda</p>
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--ink-3)]">Quando um pagamento for aprovado no banco, ele aparece aqui automaticamente.</p>
+        </div>
+      )}
+    </Card>
   );
 }
 
