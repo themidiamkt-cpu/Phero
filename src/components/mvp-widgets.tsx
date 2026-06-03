@@ -357,6 +357,8 @@ export function WorkoutExecution({ workout }: { workout: Workout }) {
   const [completedSeries, setCompletedSeries] = useState<Record<number, number[]>>({});
   const [restSeconds, setRestSeconds] = useState(0);
   const [restTotalSeconds, setRestTotalSeconds] = useState(0);
+  const [finishReminderOpen, setFinishReminderOpen] = useState(false);
+  const [workoutFinished, setWorkoutFinished] = useState(false);
   const progress = sets.length ? Math.round(((current + 1) / sets.length) * 100) : 100;
   const currentSet = sets[current];
   const libraryExercise = currentSet ? getExerciseById(currentSet.exerciseId) : undefined;
@@ -438,6 +440,15 @@ export function WorkoutExecution({ workout }: { workout: Workout }) {
     setRestSeconds(0);
     setRestTotalSeconds(0);
     setCurrent((value) => Math.min(value + 1, sets.length - 1));
+  }
+
+  function requestFinishWorkout() {
+    if (!finishReminderOpen) {
+      setFinishReminderOpen(true);
+      return;
+    }
+
+    setWorkoutFinished(true);
   }
 
   if (running) return <RunningExecution running={running} />;
@@ -528,7 +539,48 @@ export function WorkoutExecution({ workout }: { workout: Workout }) {
             Lembrete: finalize o treino so depois de marcar as series concluidas e registrar como foi o treino. Esse feedback ajuda seu personal a ajustar o proximo treino.
           </p>
         </div>
-        <PrimaryButton className="mt-3 w-full">Concluir treino</PrimaryButton>
+        {finishReminderOpen && !workoutFinished ? (
+          <div className="mt-3 rounded-[16px] border border-[var(--hair)] bg-[var(--surface-2)] p-3">
+            <p className="text-sm font-bold text-[var(--ink)]">Antes de finalizar</p>
+            <ul className="mt-2 space-y-1 text-sm leading-6 text-neutral-600">
+              <li>Confira se todas as series feitas foram marcadas.</li>
+              <li>Escreva se sentiu dor, dificuldade ou se o treino ficou facil.</li>
+              <li>Depois disso, confirme para enviar ao seu personal.</li>
+            </ul>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setFinishReminderOpen(false)}
+                className="pressable h-11 rounded-[14px] border border-[var(--hair)] bg-white text-sm font-bold text-[var(--ink)]"
+              >
+                Revisar
+              </button>
+              <button
+                type="button"
+                onClick={() => setWorkoutFinished(true)}
+                className="pressable h-11 rounded-[14px] bg-[var(--blue)] px-4 text-sm font-bold text-white shadow-[0_8px_22px_rgba(10,132,255,.32)] hover:bg-[var(--blue-ink)]"
+              >
+                Finalizar
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {workoutFinished ? (
+          <div className="mt-3 rounded-[16px] border border-[var(--green)] bg-[var(--green-wash)] p-3 text-sm font-semibold text-[var(--green)]">
+            Treino finalizado. Seu feedback ficou pronto para o personal acompanhar.
+          </div>
+        ) : null}
+        <button
+          type="button"
+          onClick={requestFinishWorkout}
+          disabled={workoutFinished}
+          className={cn(
+            "pressable mt-3 h-12 w-full rounded-[14px] px-4 text-sm font-bold text-white shadow-[0_8px_22px_rgba(10,132,255,.32)]",
+            workoutFinished ? "cursor-not-allowed bg-neutral-300 shadow-none" : "bg-[var(--blue)] hover:bg-[var(--blue-ink)]",
+          )}
+        >
+          {workoutFinished ? "Treino concluido" : finishReminderOpen ? "Entendi, concluir treino" : "Concluir treino"}
+        </button>
       </Card>
     </section>
   );
