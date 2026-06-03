@@ -10,13 +10,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { motion, type DynamicAnimationOptions } from "framer-motion";
+import { motion, type Transition, type Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface TextProps {
   children: ReactNode;
   reverse?: boolean;
-  transition?: DynamicAnimationOptions;
+  transition?: Transition;
   splitBy?: "words" | "characters" | "lines" | string;
   staggerDuration?: number;
   staggerFrom?: "first" | "last" | "center" | "random" | number;
@@ -123,7 +123,7 @@ const VerticalCutReveal = forwardRef<VerticalCutRevealRef, TextProps>(
       }
     }, [autoStart, startAnimation]);
 
-    const variants = {
+    const variants: Variants = {
       hidden: { y: reverse ? "-100%" : "100%" },
       visible: (i: number) => ({
         y: 0,

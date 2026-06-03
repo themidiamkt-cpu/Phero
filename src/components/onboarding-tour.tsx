@@ -11,7 +11,7 @@ type TourRole = Extract<UserRole, "aluno" | "personal">;
 type TourStep = {
   title: string;
   body: string;
-  route?: string;
+  route: string;
 };
 
 const tourSteps: Record<TourRole, TourStep[]> = {
