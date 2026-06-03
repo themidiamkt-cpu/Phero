@@ -11,7 +11,7 @@ import {
 } from "@/lib/mock-data";
 import type { BodyAssessment, Exercise, Payment, Plan, Student, Subscription, Trainer, Workout, WorkoutSet } from "@/lib/types";
 
-type ProfileRow = { email?: string; full_name?: string; status?: string; user_id?: string };
+type ProfileRow = { email?: string; full_name?: string; role?: string; status?: string; user_id?: string };
 type ProfileJoin = ProfileRow | ProfileRow[] | null;
 type AssessmentPhotoRow = { photo_type: "front" | "side" | "back"; photo_url: string };
 
@@ -130,13 +130,13 @@ export async function getTrainersData(): Promise<Trainer[]> {
 
   let { data, error } = await supabase
     .from("trainers")
-    .select("id, business_name, document, instagram, bio, hourly_rate, approved_at, blocked_at, invite_code, pix_key, platform_subscription_status, platform_paid_until, profiles(user_id,full_name,status)")
+    .select("id, business_name, document, instagram, bio, hourly_rate, approved_at, blocked_at, invite_code, pix_key, platform_subscription_status, platform_paid_until, profiles(user_id,full_name,role,status)")
     .order("created_at", { ascending: false });
 
   if (error?.message.includes("hourly_rate")) {
     const fallback = await supabase
       .from("trainers")
-      .select("id, business_name, document, instagram, bio, approved_at, blocked_at, invite_code, pix_key, platform_subscription_status, platform_paid_until, profiles(user_id,full_name,status)")
+      .select("id, business_name, document, instagram, bio, approved_at, blocked_at, invite_code, pix_key, platform_subscription_status, platform_paid_until, profiles(user_id,full_name,role,status)")
       .order("created_at", { ascending: false });
     data = fallback.data?.map((trainer) => ({ ...trainer, hourly_rate: null })) ?? null;
     error = fallback.error;
@@ -162,7 +162,9 @@ export async function getTrainersData(): Promise<Trainer[]> {
     platform_subscription_status: Trainer["platformSubscriptionStatus"] | null;
     platform_paid_until: string | null;
     profiles: ProfileJoin;
-  }>).map((trainer) => {
+  }>)
+    .filter((trainer) => oneProfile(trainer.profiles)?.role === "trainer")
+    .map((trainer) => {
     const profile = oneProfile(trainer.profiles);
     return {
       id: trainer.id,
