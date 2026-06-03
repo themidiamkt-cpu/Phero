@@ -170,7 +170,7 @@ export function OnboardingTour({ role }: { role: TourRole }) {
       <button
         type="button"
         onClick={showTour}
-        className="pressable fixed right-[calc(50%-13rem)] top-5 z-30 grid size-11 place-items-center rounded-full border border-[var(--hair)] bg-white/95 text-[var(--ink)] shadow-[var(--shadow-card)] backdrop-blur max-[440px]:right-5"
+        className="pressable fixed right-[calc(50%-13rem)] top-20 z-30 grid size-11 place-items-center rounded-full border border-[var(--hair)] bg-white/95 text-[var(--ink)] shadow-[var(--shadow-card)] backdrop-blur max-[440px]:right-5"
         aria-label="Abrir passo a passo"
         title="Passo a passo"
       >
