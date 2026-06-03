@@ -1,19 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Check, Dumbbell, Globe2, Plus, Save } from "lucide-react";
+import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { AlertTriangle, Check, Dumbbell, Globe2, Plus, Save, Trash2 } from "lucide-react";
 import { Badge, Card } from "@/components/ui";
 import { workouts } from "@/lib/mock-data";
-import type { Exercise } from "@/lib/types";
+import type { Exercise, WorkoutTemplate } from "@/lib/types";
 
-type GlobalTemplate = {
-  id: string;
-  title: string;
-  type: string;
+type TemplateDraft = {
+  id?: string;
+  name: string;
+  goal: string;
   level: string;
-  exercises: number;
-  updatedAt: string;
+  category: string;
+  daysPerWeek: number;
+  estimatedDurationMinutes: number;
+  location: string;
+  equipmentText: string;
   description: string;
+  isNew?: boolean;
 };
 
 type GlobalSequence = {
@@ -21,95 +27,166 @@ type GlobalSequence = {
   exercises: string[];
 };
 
-const initialTemplates: GlobalTemplate[] = [
-  {
-    id: "global-strength-1",
-    title: "Base Hipertrofia A",
-    type: "Musculacao",
-    level: "Intermediario",
-    exercises: 8,
-    updatedAt: "31/05/2026",
-    description: "Modelo base para prescricao de hipertrofia. Personais podem duplicar e adaptar por aluno.",
-  },
-  {
-    id: "global-running-1",
-    title: "Corrida Zona 2",
-    type: "Corrida",
-    level: "Todos",
-    exercises: 1,
-    updatedAt: "28/05/2026",
-    description: "Modelo base para corrida continua em zona 2.",
-  },
-  {
-    id: "global-mobility-1",
-    title: "Mobilidade de quadril",
-    type: "Mobilidade",
-    level: "Iniciante",
-    exercises: 5,
-    updatedAt: "21/05/2026",
-    description: "Sequencia base para mobilidade e aquecimento.",
-  },
-];
-
 const initialSequences: GlobalSequence[] = [
   { name: "Inferiores completo", exercises: ["Agachamento livre", "Leg press", "Prancha com toque"] },
   { name: "Peito basico", exercises: ["Supino inclinado", "Crucifixo"] },
 ];
 
-function todayLabel() {
-  return new Intl.DateTimeFormat("pt-BR").format(new Date());
+function templateToDraft(template?: WorkoutTemplate): TemplateDraft {
+  return {
+    id: template?.id,
+    name: template?.name ?? "Novo modelo global",
+    goal: template?.goal ?? "Geral",
+    level: template?.level ?? "Iniciante",
+    category: template?.category ?? "Musculacao",
+    daysPerWeek: template?.daysPerWeek ?? 1,
+    estimatedDurationMinutes: template?.estimatedDurationMinutes ?? 45,
+    location: template?.location ?? "Academia",
+    equipmentText: template?.equipment.join(", ") ?? "",
+    description: template?.description ?? "Descreva quando os personais devem usar este modelo.",
+    isNew: !template,
+  };
 }
 
-export function AdminGlobalTrainingManager({ globalExercises }: { globalExercises: Exercise[] }) {
+function exerciseCount(template: WorkoutTemplate) {
+  return template.days.reduce((sum, day) => sum + day.exercises.length, 0);
+}
+
+function updatedLabel(template: WorkoutTemplate) {
+  const value = template.createdAt ? new Date(template.createdAt) : new Date();
+  if (Number.isNaN(value.getTime())) return "hoje";
+  return new Intl.DateTimeFormat("pt-BR").format(value);
+}
+
+function draftPayload(draft: TemplateDraft) {
+  return {
+    name: draft.name,
+    goal: draft.goal,
+    level: draft.level,
+    category: draft.category,
+    daysPerWeek: draft.daysPerWeek,
+    estimatedDurationMinutes: draft.estimatedDurationMinutes,
+    location: draft.location,
+    equipment: draft.equipmentText.split(",").map((item) => item.trim()).filter(Boolean),
+    description: draft.description,
+  };
+}
+
+export function AdminGlobalTrainingManager({
+  globalExercises,
+  initialTemplates,
+}: {
+  globalExercises: Exercise[];
+  initialTemplates: WorkoutTemplate[];
+}) {
+  const router = useRouter();
   const [templates, setTemplates] = useState(initialTemplates);
   const [sequences, setSequences] = useState(initialSequences);
-  const [selectedId, setSelectedId] = useState(initialTemplates[0].id);
+  const [selectedId, setSelectedId] = useState(initialTemplates[0]?.id ?? "new");
+  const [draft, setDraft] = useState<TemplateDraft>(() => templateToDraft(initialTemplates[0]));
   const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const selectedTemplate = useMemo(
-    () => templates.find((template) => template.id === selectedId) ?? templates[0],
+    () => templates.find((template) => template.id === selectedId),
     [selectedId, templates],
   );
-  const [draft, setDraft] = useState(selectedTemplate);
 
-  function editTemplate(template: GlobalTemplate) {
+  function selectTemplate(template: WorkoutTemplate) {
     setSelectedId(template.id);
-    setDraft(template);
-    setNotice(`${template.title} carregado no editor rapido.`);
+    setDraft(templateToDraft(template));
+    setError("");
+    setNotice(`${template.name} carregado no editor.`);
   }
 
-  function duplicateTemplate(template: GlobalTemplate) {
-    const copy = {
-      ...template,
-      id: `${template.id}-copy-${Date.now()}`,
-      title: `${template.title} copia`,
-      updatedAt: todayLabel(),
-    };
-    setTemplates((current) => [copy, ...current]);
-    setSelectedId(copy.id);
-    setDraft(copy);
-    setNotice("Modelo duplicado e carregado no editor.");
+  function startNewTemplate() {
+    const nextDraft = templateToDraft();
+    setSelectedId("new");
+    setDraft(nextDraft);
+    setError("");
+    setNotice("Preencha o editor e clique em Salvar para criar o modelo.");
   }
 
-  function createTemplate() {
-    const template = {
-      id: `global-template-${Date.now()}`,
-      title: "Novo modelo global",
-      type: "Musculacao",
-      level: "Iniciante",
-      exercises: 0,
-      updatedAt: todayLabel(),
-      description: "Descreva quando os personais devem usar este modelo.",
-    };
-    setTemplates((current) => [template, ...current]);
-    setSelectedId(template.id);
-    setDraft(template);
-    setNotice("Novo modelo criado no editor.");
+  async function saveTemplate() {
+    setError("");
+    setNotice("");
+
+    if (!draft.name.trim()) {
+      setError("Informe o nome do modelo.");
+      return;
+    }
+
+    setLoadingAction("save");
+    try {
+      const endpoint = draft.isNew || !draft.id ? "/api/admin/workout-templates" : `/api/admin/workout-templates/${draft.id}`;
+      const response = await fetch(endpoint, {
+        method: draft.isNew || !draft.id ? "POST" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draftPayload(draft)),
+      });
+      const result = (await response.json().catch(() => ({}))) as { id?: string; error?: string };
+
+      if (!response.ok) {
+        setError(result.error ?? "Nao foi possivel salvar o modelo.");
+        return;
+      }
+
+      setNotice(draft.isNew ? "Modelo criado com sucesso." : "Modelo atualizado com sucesso.");
+      router.refresh();
+    } finally {
+      setLoadingAction(null);
+    }
   }
 
-  function saveTemplate() {
-    const updated = { ...draft, updatedAt: todayLabel() };
-    setTemplates((current) => current.map((template) => (template.id === updated.id ? updated : template)));
-    setNotice("Alteracao global salva nesta tela.");
+  async function duplicateTemplate(template: WorkoutTemplate) {
+    setError("");
+    setLoadingAction(`duplicate:${template.id}`);
+    try {
+      const response = await fetch(`/api/admin/workout-templates/${template.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "duplicate" }),
+      });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        setError(result.error ?? "Nao foi possivel duplicar o modelo.");
+        return;
+      }
+
+      setNotice("Modelo duplicado com sucesso.");
+      router.refresh();
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function deleteTemplate(template: WorkoutTemplate) {
+    const confirmed = window.confirm(`Excluir o modelo "${template.name}"? Ele deixara de aparecer para os personais.`);
+    if (!confirmed) return;
+
+    setError("");
+    setLoadingAction(`delete:${template.id}`);
+    try {
+      const response = await fetch(`/api/admin/workout-templates/${template.id}`, { method: "DELETE" });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        setError(result.error ?? "Nao foi possivel excluir o modelo.");
+        return;
+      }
+
+      setTemplates((current) => current.filter((item) => item.id !== template.id));
+      if (selectedId === template.id) {
+        const next = templates.find((item) => item.id !== template.id);
+        setSelectedId(next?.id ?? "new");
+        setDraft(templateToDraft(next));
+      }
+      setNotice("Modelo excluido.");
+      router.refresh();
+    } finally {
+      setLoadingAction(null);
+    }
   }
 
   function createSequence() {
@@ -133,9 +210,10 @@ export function AdminGlobalTrainingManager({ globalExercises }: { globalExercise
             <div>
               <h2 className="font-semibold text-[var(--ink)]">Edicao global</h2>
               <p className="mt-1 text-sm leading-6 text-neutral-600">
-                Qualquer alteracao feita aqui altera os modelos base de treino para todos os personais da plataforma.
+                Crie, edite e exclua modelos globais. Personais usam estes modelos como base para duplicar treinos por aluno.
               </p>
               {notice ? <p className="mt-3 rounded-[10px] bg-blue-50 px-3 py-2 text-sm font-bold text-blue-950">{notice}</p> : null}
+              {error ? <p className="mt-3 rounded-[10px] bg-rose-50 px-3 py-2 text-sm font-bold text-rose-950">{error}</p> : null}
             </div>
           </div>
         </Card>
@@ -143,7 +221,7 @@ export function AdminGlobalTrainingManager({ globalExercises }: { globalExercise
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="lbl">Modelos publicados</p>
-            <button type="button" onClick={createTemplate} className="pressable flex h-10 items-center gap-2 rounded-[10px] bg-black px-4 text-sm font-semibold text-white hover:bg-neutral-800">
+            <button type="button" onClick={startNewTemplate} className="pressable flex h-10 items-center gap-2 rounded-[10px] bg-black px-4 text-sm font-semibold text-white hover:bg-neutral-800">
               <Plus className="size-4" />
               Novo modelo
             </button>
@@ -154,21 +232,30 @@ export function AdminGlobalTrainingManager({ globalExercises }: { globalExercise
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-semibold">{template.title}</h2>
-                      <Badge tone="blue">{template.type}</Badge>
+                      <h2 className="font-semibold">{template.name}</h2>
+                      <Badge tone="blue">{template.category}</Badge>
                     </div>
                     <p className="mt-2 text-sm text-neutral-500">
-                      {template.level} · {template.exercises} exercicios · Atualizado em {template.updatedAt}
+                      {template.level} · {exerciseCount(template)} exercicios · Atualizado em {updatedLabel(template)}
                     </p>
                   </div>
                   <Badge tone="success" dot>Publicado</Badge>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => editTemplate(template)} className="h-10 rounded-[10px] border border-black bg-white text-sm font-semibold hover:bg-[var(--surface)]">Editar</button>
-                  <button type="button" onClick={() => duplicateTemplate(template)} className="h-10 rounded-[10px] bg-black text-sm font-semibold text-white hover:bg-neutral-800">Duplicar</button>
+                <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                  <button type="button" onClick={() => selectTemplate(template)} className="h-10 rounded-[10px] border border-black bg-white text-sm font-semibold hover:bg-[var(--surface)]">Editar</button>
+                  <button type="button" disabled={loadingAction !== null} onClick={() => duplicateTemplate(template)} className="h-10 rounded-[10px] bg-black text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-60">{loadingAction === `duplicate:${template.id}` ? "Duplicando..." : "Duplicar"}</button>
+                  <button type="button" disabled={loadingAction !== null} onClick={() => deleteTemplate(template)} className="h-10 rounded-[10px] bg-rose-50 text-sm font-semibold text-rose-800 hover:bg-rose-100 disabled:opacity-60">
+                    <span className="inline-flex items-center justify-center gap-2"><Trash2 className="size-4" /> Excluir</span>
+                  </button>
                 </div>
               </Card>
             ))}
+            {!templates.length ? (
+              <Card>
+                <p className="text-sm font-semibold text-neutral-600">Nenhum modelo global cadastrado.</p>
+                <p className="mt-1 text-xs font-medium text-neutral-500">Clique em Novo modelo para criar o primeiro.</p>
+              </Card>
+            ) : null}
           </div>
         </div>
 
@@ -205,8 +292,9 @@ export function AdminGlobalTrainingManager({ globalExercises }: { globalExercise
         <Card>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="lbl">Editor rapido</p>
-              <h2 className="mt-2 text-lg font-semibold">{draft.title}</h2>
+              <p className="lbl">{draft.isNew ? "Novo modelo" : "Editor rapido"}</p>
+              <h2 className="mt-2 text-lg font-semibold">{draft.name}</h2>
+              {selectedTemplate ? <p className="mt-1 text-xs font-medium text-neutral-500">Editando modelo publicado</p> : null}
             </div>
             <div className="grid size-11 place-items-center rounded-[10px] border border-[var(--hair)] bg-white text-black">
               <Globe2 className="size-5" />
@@ -214,13 +302,14 @@ export function AdminGlobalTrainingManager({ globalExercises }: { globalExercise
           </div>
 
           <div className="mt-5 grid gap-3">
-            <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-              Nome do treino geral
-              <input className="h-12 rounded-[10px] border border-[var(--hair)] bg-white px-3 text-sm font-medium outline-none transition focus:border-black focus:ring-4 focus:ring-black/5" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
-            </label>
-            <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-              Tipo
-              <select className="h-12 rounded-[10px] border border-[var(--hair)] bg-white px-3 text-sm font-medium outline-none transition focus:border-black focus:ring-4 focus:ring-black/5" value={draft.type} onChange={(event) => setDraft({ ...draft, type: event.target.value })}>
+            <Field label="Nome do treino geral">
+              <input className="admin-input" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+            </Field>
+            <Field label="Objetivo">
+              <input className="admin-input" value={draft.goal} onChange={(event) => setDraft({ ...draft, goal: event.target.value })} />
+            </Field>
+            <Field label="Tipo">
+              <select className="admin-input" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })}>
                 <option>Musculacao</option>
                 <option>Corrida</option>
                 <option>Hibrido</option>
@@ -228,25 +317,37 @@ export function AdminGlobalTrainingManager({ globalExercises }: { globalExercise
                 <option>Mobilidade</option>
                 <option>Recuperacao</option>
               </select>
-            </label>
-            <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-              Nivel
-              <select className="h-12 rounded-[10px] border border-[var(--hair)] bg-white px-3 text-sm font-medium outline-none transition focus:border-black focus:ring-4 focus:ring-black/5" value={draft.level} onChange={(event) => setDraft({ ...draft, level: event.target.value })}>
+            </Field>
+            <Field label="Nivel">
+              <select className="admin-input" value={draft.level} onChange={(event) => setDraft({ ...draft, level: event.target.value })}>
                 <option>Iniciante</option>
                 <option>Intermediario</option>
                 <option>Avancado</option>
                 <option>Todos</option>
               </select>
-            </label>
-            <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-              Descricao global
-              <textarea className="min-h-24 rounded-[10px] border border-[var(--hair)] bg-white px-3 py-3 text-sm font-medium outline-none transition focus:border-black focus:ring-4 focus:ring-black/5" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
-            </label>
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Dias/semana">
+                <input className="admin-input" type="number" min={1} max={7} value={draft.daysPerWeek} onChange={(event) => setDraft({ ...draft, daysPerWeek: Number(event.target.value) })} />
+              </Field>
+              <Field label="Duracao min.">
+                <input className="admin-input" type="number" min={10} max={180} value={draft.estimatedDurationMinutes} onChange={(event) => setDraft({ ...draft, estimatedDurationMinutes: Number(event.target.value) })} />
+              </Field>
+            </div>
+            <Field label="Local">
+              <input className="admin-input" value={draft.location} onChange={(event) => setDraft({ ...draft, location: event.target.value })} />
+            </Field>
+            <Field label="Equipamentos">
+              <input className="admin-input" value={draft.equipmentText} onChange={(event) => setDraft({ ...draft, equipmentText: event.target.value })} placeholder="Maquinas, Halteres" />
+            </Field>
+            <Field label="Descricao global">
+              <textarea className="admin-input min-h-24 py-3" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
+            </Field>
           </div>
 
-          <button type="button" onClick={saveTemplate} className="pressable mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-black text-sm font-semibold text-white shadow-[0_8px_20px_rgba(0,0,0,.12)] hover:bg-neutral-800">
+          <button type="button" disabled={loadingAction !== null} onClick={saveTemplate} className="pressable mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-black text-sm font-semibold text-white shadow-[0_8px_20px_rgba(0,0,0,.12)] hover:bg-neutral-800 disabled:opacity-60">
             <Save className="size-4" />
-            Salvar alteracao global
+            {loadingAction === "save" ? "Salvando..." : draft.isNew ? "Criar modelo" : "Salvar alteracao global"}
           </button>
         </Card>
 
@@ -271,10 +372,19 @@ export function AdminGlobalTrainingManager({ globalExercises }: { globalExercise
         <Card>
           <p className="lbl">Impacto</p>
           <p className="mt-3 text-sm leading-6 text-neutral-500">
-            {workouts.length} treinos usam a estrutura base. Em producao, este editor deve gravar em tabelas globais versionadas para auditoria.
+            {workouts.length} treinos usam a estrutura base. Exclusoes despublicam o modelo para preservar historico.
           </p>
         </Card>
       </aside>
     </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-neutral-700">
+      {label}
+      {children}
+    </label>
   );
 }
