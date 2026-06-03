@@ -127,7 +127,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: studentError?.message ?? "Nao foi possivel criar aluno." }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, role: "aluno", id: student.id, requiresEmailConfirmation: true });
+    return NextResponse.json({ ok: true, role: "aluno", id: student.id, trainerCode, requiresEmailConfirmation: true });
   }
 
   const { data: createdUser, error: userError } = await supabase.auth.signUp({

@@ -81,7 +81,12 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             consentLgpd,
           }),
         });
-        const registerResult = (await registerResponse.json()) as { ok?: boolean; error?: string; requiresEmailConfirmation?: boolean };
+        const registerResult = (await registerResponse.json()) as {
+          ok?: boolean;
+          error?: string;
+          trainerCode?: string;
+          requiresEmailConfirmation?: boolean;
+        };
 
         if (!registerResponse.ok || !registerResult.ok) {
           setError(registerResult.error ?? "Nao foi possivel criar conta.");
@@ -89,7 +94,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         }
 
         if (registerResult.requiresEmailConfirmation) {
-          setSuccess("Conta criada. Confirme seu email antes de entrar no Phero.");
+          const linkedCode = accountType === "student" && registerResult.trainerCode ? ` vinculada ao codigo ${registerResult.trainerCode}` : "";
+          setSuccess(`Conta criada${linkedCode}. Confirme seu email antes de entrar no Phero.`);
           setPassword("");
           return;
         }
@@ -164,7 +170,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             <Field icon={<Mail className="size-4" />} placeholder="seu@email.com" value={email} onChange={setEmail} />
             {mode === "register" ? <Field icon={<Phone className="size-4" />} placeholder="Telefone" value={phone} onChange={setPhone} type="tel" /> : null}
             {mode === "register" && accountType === "student" ? (
-              <Field icon={<KeyRound className="size-4" />} placeholder="Codigo do personal" value={trainerCode} onChange={setTrainerCode} type="text" />
+              <Field icon={<KeyRound className="size-4" />} placeholder="Codigo do personal, ex: RH9311" value={trainerCode} onChange={(value) => setTrainerCode(value.toUpperCase())} type="text" />
             ) : null}
             <Field icon={<Lock className="size-4" />} placeholder="Senha" password value={password} onChange={setPassword} />
             {mode === "register" ? (
