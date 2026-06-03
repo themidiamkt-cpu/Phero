@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicSiteUrl } from "@/lib/site-url";
 import { canAddStudent, generateInviteCode, normalizeInviteCode } from "@/lib/trainer-invite";
 
 type RegisterPayload = {
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
   const email = payload.email?.trim().toLowerCase();
   const phone = payload.phone?.trim() || null;
   const password = payload.password?.trim();
+  const emailRedirectTo = `${getPublicSiteUrl()}/login`;
 
   if (!role || !fullName || !email || !phone || !password) {
     return NextResponse.json({ ok: false, error: "Preencha nome, email, telefone e senha." }, { status: 400 });
@@ -84,6 +86,7 @@ export async function POST(request: Request) {
       email,
       password,
       options: {
+        emailRedirectTo,
         data: { full_name: fullName, role: "student", consent_lgpd: true },
       },
     });
@@ -134,6 +137,7 @@ export async function POST(request: Request) {
     email,
     password,
     options: {
+      emailRedirectTo,
       data: { full_name: fullName, role: "trainer", consent_lgpd: true },
     },
   });

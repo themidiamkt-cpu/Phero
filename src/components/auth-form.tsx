@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Mail, Lock, Phone, UserRound, KeyRound } from "lucide-react";
 import { roleHome } from "@/lib/routes";
+import { getPublicSiteUrl } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { UserRole } from "@/lib/types";
@@ -128,6 +129,36 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     }
   }
 
+  async function sendPasswordReset() {
+    const normalizedEmail = email.trim().toLowerCase();
+    setError("");
+    setSuccess("");
+
+    if (!normalizedEmail) {
+      setError("Informe seu email para receber o reset de senha.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: `${getPublicSiteUrl()}/reset-password`,
+      });
+
+      if (resetError) {
+        setError(resetError.message || "Nao foi possivel enviar o reset de senha.");
+        return;
+      }
+
+      setSuccess("Enviamos o link de reset para seu email. Ele vai abrir na tela de nova senha.");
+    } catch {
+      setError("Nao foi possivel enviar o reset de senha.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="auth-page min-h-dvh">
       <ThemeToggle className="fixed right-[calc(50%-13rem)] top-5 z-30 max-[440px]:right-5" />
@@ -184,6 +215,16 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             <button disabled={loading} className="pressable mt-1 h-14 rounded-[16px] bg-[var(--blue)] text-[16px] font-bold text-white shadow-[0_12px_30px_rgba(10,132,255,.36)] transition hover:bg-[var(--blue-ink)] disabled:opacity-60">
               {loading ? (mode === "login" ? "Entrando..." : "Criando...") : mode === "login" ? "Entrar" : "Cadastrar"}
             </button>
+            {mode === "login" ? (
+              <button
+                type="button"
+                onClick={sendPasswordReset}
+                disabled={loading}
+                className="text-center text-sm font-bold text-[var(--blue)] transition hover:text-[var(--blue-ink)] disabled:opacity-60"
+              >
+                Esqueci minha senha
+              </button>
+            ) : null}
           </form>
 
         </div>
