@@ -1794,13 +1794,46 @@ export function StudentPlanSummary({ studentId }: { studentId: string }) {
   );
 }
 
-export function AdminTrainerActions() {
+export function AdminTrainerActions({ trainerId }: { trainerId: string }) {
+  const router = useRouter();
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
+  async function runAction(action: "approve" | "reject" | "block" | "unblock") {
+    const labels = {
+      approve: "aprovar",
+      reject: "reprovar",
+      block: "bloquear",
+      unblock: "desbloquear",
+    };
+    const confirmed = window.confirm(`Deseja ${labels[action]} este personal?`);
+    if (!confirmed) return;
+
+    setLoadingAction(action);
+    try {
+      const response = await fetch(`/api/admin/trainers/${trainerId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        window.alert(result.error ?? "Nao foi possivel executar a acao.");
+        return;
+      }
+
+      router.refresh();
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
   return (
     <div className="mt-4 grid grid-cols-2 gap-2">
-      <button className="h-10 rounded-lg bg-emerald-600 text-xs font-semibold text-white">Aprovar</button>
-      <button className="h-10 rounded-lg bg-rose-50 text-xs font-semibold text-rose-800">Reprovar</button>
-      <button className="h-10 rounded-lg border border-neutral-200 text-xs font-semibold">Bloquear</button>
-      <button className="h-10 rounded-lg border border-neutral-200 text-xs font-semibold">Desbloquear</button>
+      <button type="button" disabled={loadingAction !== null} onClick={() => runAction("approve")} className="h-10 rounded-lg bg-emerald-600 text-xs font-semibold text-white disabled:opacity-60">{loadingAction === "approve" ? "Aprovando..." : "Aprovar"}</button>
+      <button type="button" disabled={loadingAction !== null} onClick={() => runAction("reject")} className="h-10 rounded-lg bg-rose-50 text-xs font-semibold text-rose-800 disabled:opacity-60">{loadingAction === "reject" ? "Reprovando..." : "Reprovar"}</button>
+      <button type="button" disabled={loadingAction !== null} onClick={() => runAction("block")} className="h-10 rounded-lg border border-neutral-200 text-xs font-semibold disabled:opacity-60">{loadingAction === "block" ? "Bloqueando..." : "Bloquear"}</button>
+      <button type="button" disabled={loadingAction !== null} onClick={() => runAction("unblock")} className="h-10 rounded-lg border border-neutral-200 text-xs font-semibold disabled:opacity-60">{loadingAction === "unblock" ? "Desbloqueando..." : "Desbloquear"}</button>
     </div>
   );
 }

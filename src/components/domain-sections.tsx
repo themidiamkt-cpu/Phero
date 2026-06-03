@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Badge, Card, PrimaryButton } from "@/components/ui";
-import { exercises, money, payments, students, trainers, workouts } from "@/lib/mock-data";
+import { exercises, money, payments, students, workouts } from "@/lib/mock-data";
 import type { Payment, PaymentStatus, Trainer, Workout } from "@/lib/types";
 import { AdminTrainerActions } from "@/components/mvp-widgets";
 
@@ -138,23 +138,28 @@ export function PaymentList({ studentId, paymentItems = payments }: { studentId?
   );
 }
 
-export function TrainerTable() {
+export function TrainerTable({ trainerItems = [] }: { trainerItems?: Trainer[] }) {
   return (
     <div className="grid gap-3">
-      {trainers.map((trainer) => (
-        <Link key={trainer.id} href={`/admin/personal/${trainer.id}`}>
-          <Card>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {trainerItems.map((trainer) => (
+        <Card key={trainer.id}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Link href={`/admin/personal/${trainer.id}`} className="min-w-0 flex-1">
               <div>
                 <h2 className="font-semibold">{trainer.name}</h2>
                 <p className="mt-1 text-sm text-neutral-500">{trainer.specialty} · {trainer.studentsCount} alunos · {money(trainer.monthlyRevenue)}</p>
               </div>
-              <TrainerStatus trainer={trainer} />
-            </div>
-            <AdminTrainerActions />
-          </Card>
-        </Link>
+            </Link>
+            <TrainerStatus trainer={trainer} />
+          </div>
+          <AdminTrainerActions trainerId={trainer.id} />
+        </Card>
       ))}
+      {!trainerItems.length ? (
+        <Card>
+          <p className="text-sm font-semibold text-neutral-600">Nenhum personal cadastrado.</p>
+        </Card>
+      ) : null}
     </div>
   );
 }

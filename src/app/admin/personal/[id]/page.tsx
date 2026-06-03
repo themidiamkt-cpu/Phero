@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { Badge, Card, PageHeader, PrimaryButton, Stat } from "@/components/ui";
-import { money, trainers } from "@/lib/mock-data";
+import { Badge, Card, PageHeader, Stat } from "@/components/ui";
+import { money } from "@/lib/mock-data";
 import { TrainerStatus } from "@/components/domain-sections";
-import { exercises, payments, students, workouts } from "@/lib/mock-data";
+import { AdminTrainerActions } from "@/components/mvp-widgets";
+import { getMvpData } from "@/lib/data";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -10,14 +11,22 @@ type Props = {
 
 export default async function AdminPersonalDetailPage({ params }: Props) {
   const { id } = await params;
-  const trainer = trainers.find((item) => item.id === id);
+  const data = await getMvpData();
+  const trainerBase = data.trainers.find((item) => item.id === id);
 
-  if (!trainer) notFound();
-  const activeStudents = students.filter((student) => student.personalId === trainer.id && student.accessStatus === "active").length;
-  const blockedStudents = students.filter((student) => student.personalId === trainer.id && student.accessStatus === "blocked").length;
-  const trainerPayments = payments.filter((payment) => payment.personalId === trainer.id);
-  const trainerExercises = exercises.filter((exercise) => exercise.personalId === trainer.id);
-  const trainerWorkouts = workouts.filter((workout) => workout.personalId === trainer.id);
+  if (!trainerBase) notFound();
+  const activeStudents = data.students.filter((student) => student.personalId === trainerBase.id && student.accessStatus === "active").length;
+  const blockedStudents = data.students.filter((student) => student.personalId === trainerBase.id && student.accessStatus === "blocked").length;
+  const trainerPayments = data.payments.filter((payment) => payment.personalId === trainerBase.id);
+  const trainerExercises = data.exercises.filter((exercise) => exercise.personalId === trainerBase.id);
+  const trainerWorkouts = data.workouts.filter((workout) => workout.personalId === trainerBase.id);
+  const trainer = {
+    ...trainerBase,
+    studentsCount: activeStudents + blockedStudents,
+    monthlyRevenue: trainerPayments
+      .filter((payment) => payment.status === "approved" || payment.status === "paid")
+      .reduce((sum, payment) => sum + payment.amount, 0),
+  };
 
   return (
     <>
@@ -37,10 +46,7 @@ export default async function AdminPersonalDetailPage({ params }: Props) {
             <Badge tone={trainer.blocked ? "danger" : "success"}>{trainer.blocked ? "Bloqueado" : "Nao bloqueado"}</Badge>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <PrimaryButton>Aprovar personal</PrimaryButton>
-            <button className="h-12 rounded-lg border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-800">
-              Bloquear acesso
-            </button>
+            <AdminTrainerActions trainerId={trainer.id} />
           </div>
         </Card>
       </section>
