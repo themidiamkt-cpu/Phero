@@ -59,7 +59,7 @@ export default function Home() {
 
         <ScrollExpandMedia
           mediaType="image"
-          mediaSrc="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1280&auto=format&fit=crop"
+          mediaSrc="https://images.unsplash.com/photo-1738523686514-4b6819db42ad?q=80&w=1280&auto=format&fit=crop"
           bgImageSrc="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop"
           title="Phero App"
           date="Gestao para personal e aluno"
