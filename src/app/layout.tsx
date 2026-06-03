@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { AuthHashHandler } from "@/components/auth-hash-handler";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,7 +29,10 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-white text-neutral-950">{children}</body>
+      <body className="min-h-full bg-white text-neutral-950">
+        <AuthHashHandler />
+        {children}
+      </body>
     </html>
   );
 }
