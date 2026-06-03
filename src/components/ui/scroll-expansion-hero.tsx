@@ -12,7 +12,6 @@ interface ScrollExpandMediaProps {
   title?: string;
   date?: string;
   scrollToExpand?: string;
-  textBlend?: boolean;
   children?: ReactNode;
 }
 
@@ -24,7 +23,6 @@ export default function ScrollExpandMedia({
   title,
   date,
   scrollToExpand,
-  textBlend,
   children,
 }: ScrollExpandMediaProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -216,31 +214,27 @@ export default function ScrollExpandMedia({
 
                 <div className="relative z-10 mt-4 flex flex-col items-center text-center transition-none">
                   {date ? (
-                    <p className="text-2xl text-blue-100" style={{ transform: `translateX(-${textTranslateX}vw)` }}>
+                    <p className="text-2xl font-semibold text-white drop-shadow-[0_2px_12px_rgba(0,0,0,.8)]" style={{ transform: `translateX(-${textTranslateX}vw)` }}>
                       {date}
                     </p>
                   ) : null}
                   {scrollToExpand ? (
-                    <p className="text-center font-medium text-blue-100" style={{ transform: `translateX(${textTranslateX}vw)` }}>
+                    <p className="text-center font-semibold text-white/92 drop-shadow-[0_2px_10px_rgba(0,0,0,.8)]" style={{ transform: `translateX(${textTranslateX}vw)` }}>
                       {scrollToExpand}
                     </p>
                   ) : null}
                 </div>
               </div>
 
-              <div
-                className={`relative z-10 flex w-full flex-col items-center justify-center gap-4 text-center transition-none ${
-                  textBlend ? "mix-blend-difference" : "mix-blend-normal"
-                }`}
-              >
+              <div className="relative z-10 flex w-full flex-col items-center justify-center gap-4 text-center transition-none">
                 <motion.h2
-                  className="text-5xl font-bold tracking-[-0.05em] text-blue-100 transition-none md:text-7xl lg:text-8xl"
+                  className="text-5xl font-bold tracking-[-0.05em] text-white drop-shadow-[0_5px_24px_rgba(0,0,0,.75)] transition-none md:text-7xl lg:text-8xl"
                   style={{ transform: `translateX(-${textTranslateX}vw)` }}
                 >
                   {firstWord}
                 </motion.h2>
                 <motion.h2
-                  className="text-center text-5xl font-bold tracking-[-0.05em] text-blue-100 transition-none md:text-7xl lg:text-8xl"
+                  className="text-center text-5xl font-bold tracking-[-0.05em] text-white drop-shadow-[0_5px_24px_rgba(0,0,0,.75)] transition-none md:text-7xl lg:text-8xl"
                   style={{ transform: `translateX(${textTranslateX}vw)` }}
                 >
                   {restOfTitle}
@@ -249,7 +243,7 @@ export default function ScrollExpandMedia({
             </div>
 
             <motion.section
-              className="flex w-full flex-col px-6 py-10 md:px-8 lg:py-16"
+              className="flex w-full flex-col bg-[#f4f7fb] px-6 py-14 text-[#101217] md:px-8 lg:py-20"
               initial={{ opacity: 0 }}
               animate={{ opacity: showContent ? 1 : 0 }}
               transition={{ duration: 0.7 }}

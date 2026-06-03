@@ -64,7 +64,6 @@ export default function Home() {
           title="Phero App"
           date="Gestao para personal e aluno"
           scrollToExpand="Role para expandir"
-          textBlend
         >
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.92fr_1.08fr]">
             <div className="max-w-2xl">
