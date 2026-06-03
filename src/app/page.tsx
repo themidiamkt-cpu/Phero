@@ -6,6 +6,7 @@ import {
   Dumbbell,
   Users,
 } from "lucide-react";
+import PricingSection4 from "@/components/ui/pricing-section-4";
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 const trainerFeatures = [
@@ -42,6 +43,7 @@ export default function Home() {
             <a href="#personal">Personal</a>
             <a href="#aluno">Aluno</a>
             <a href="#fluxo">Fluxo</a>
+            <a href="#precos">Precos</a>
           </nav>
           <Link href="/login" className="rounded-full px-4 py-2 text-sm font-bold text-white/86 transition hover:bg-white/10">
             Entrar
@@ -104,6 +106,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PricingSection4 />
 
       <section className="px-6 py-16 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 rounded-[8px] bg-[#0e2034] p-8 text-white md:flex-row md:items-center lg:p-10">
