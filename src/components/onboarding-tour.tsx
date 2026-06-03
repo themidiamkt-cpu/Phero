@@ -160,6 +160,9 @@ export function OnboardingTour({ role }: { role: TourRole }) {
     const nextIndex = Math.min(Math.max(index, 0), steps.length - 1);
     const nextStep = steps[nextIndex];
     setStepIndex(nextIndex);
+    if (nextIndex === steps.length - 1) {
+      localStorage.setItem(storageKey(role), "true");
+    }
     if (nextStep.route && nextStep.route !== pathname) {
       router.push(nextStep.route);
     }
@@ -178,7 +181,7 @@ export function OnboardingTour({ role }: { role: TourRole }) {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-20 backdrop-blur-[2px]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-20">
           <section
             className="w-full max-w-md rounded-[28px] border border-white/80 bg-white p-5 text-[var(--ink)] shadow-[var(--shadow-pop)]"
             role="dialog"
