@@ -12,31 +12,31 @@ import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 
 const plans = [
   {
+    name: "Gratis",
+    description: "Para comecar sem custo e validar a rotina com poucos alunos.",
+    price: 0,
+    period: "sempre",
+    buttonText: "Comecar gratis",
+    includes: ["Inclui:", "Ate 2 alunos gratuitos", "Prescricao de treinos", "Chat com aluno", "Financeiro basico"],
+  },
+  {
     name: "Mensal",
-    description: "Para testar a plataforma e manter flexibilidade total.",
+    description: "Para personais que querem escalar com alunos ilimitados.",
     price: 40,
     period: "mes",
-    buttonText: "Comecar mensal",
-    includes: ["Inclui:", "Ate 2 alunos gratuitos", "Prescricao de treinos", "Chat com aluno", "Financeiro e comprovantes"],
-  },
-  {
-    name: "6 meses",
-    description: "Para quem quer organizar a consultoria por semestre.",
-    price: 230,
-    period: "6 meses",
-    buttonText: "Assinar 6 meses",
+    buttonText: "Assinar mensal",
     popular: true,
-    badge: "Mais equilibrado",
-    includes: ["Inclui tudo do mensal, plus:", "Economia sobre 6 mensalidades", "Melhor previsibilidade de caixa", "Ideal para ciclos de acompanhamento", "Acesso continuo aos recursos"],
+    badge: "Mais flexivel",
+    includes: ["Inclui tudo do gratis, plus:", "Alunos ilimitados", "Treinos e acompanhamento sem limite", "Chat e comprovantes organizados", "Ideal para crescer mes a mes"],
   },
   {
-    name: "12 meses",
-    description: "Melhor escolha para personais que querem rodar o ano todo.",
-    price: 440,
+    name: "Anual",
+    description: "Melhor escolha para manter o ano organizado e economizar.",
+    price: 420,
     period: "ano",
     buttonText: "Assinar anual",
     badge: "Melhor valor",
-    includes: ["Inclui tudo do semestral, plus:", "Maior economia anual", "Menos renovacoes e interrupcoes", "Base estavel para escalar alunos", "Prioridade para futuras melhorias"],
+    includes: ["Inclui tudo do mensal, plus:", "Alunos ilimitados", "Economia de R$60 no ano", "Menos renovacoes e interrupcoes", "Base estavel para escalar alunos"],
   },
 ];
 
@@ -142,8 +142,14 @@ export default function PricingSection4() {
                   <h3 className="mb-2 text-3xl font-semibold">{plan.name}</h3>
                 </div>
                 <div className="flex items-baseline">
-                  <span className="text-lg font-semibold text-white/70">R$</span>
-                  <NumberFlow value={plan.price} className="ml-1 text-5xl font-semibold tracking-[-0.04em]" />
+                  {plan.price === 0 ? (
+                    <span className="text-5xl font-semibold tracking-[-0.04em]">Gratis</span>
+                  ) : (
+                    <>
+                      <span className="text-lg font-semibold text-white/70">R$</span>
+                      <NumberFlow value={plan.price} className="ml-1 text-5xl font-semibold tracking-[-0.04em]" />
+                    </>
+                  )}
                   <span className="ml-2 text-gray-300">/{plan.period}</span>
                 </div>
                 <p className="mb-4 text-sm leading-6 text-gray-300">{plan.description}</p>
@@ -184,7 +190,7 @@ export default function PricingSection4() {
         viewport={{ once: true }}
         className="relative z-10 mx-auto mt-5 max-w-2xl text-center text-sm leading-6 text-white/48"
       >
-        O semestral economiza R$10 sobre seis mensalidades. O anual economiza R$40 sobre doze mensalidades.
+        O gratis libera ate 2 alunos. Mensal e anual liberam alunos ilimitados; no anual voce economiza R$60 em comparacao com 12 mensalidades.
       </motion.p>
     </section>
   );

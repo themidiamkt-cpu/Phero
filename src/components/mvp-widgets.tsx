@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronRight, FileUp, LocateFixed, LockKeyhole, Pause, Play, Plus, Search, Square, Upload, UploadCloud } from "lucide-react";
+import { Bell, Check, ChevronRight, FileUp, LocateFixed, LockKeyhole, Pause, Play, Plus, Search, Square, Upload, UploadCloud } from "lucide-react";
 import { Avatar, Badge, Card, PrimaryButton, ProgressBar, SelectInput, TextInput, cn } from "@/components/ui";
 import {
   exercises,
@@ -522,6 +522,12 @@ export function WorkoutExecution({ workout }: { workout: Workout }) {
       <Card>
         <label className="text-sm font-semibold">Feedback do treino</label>
         <textarea className="mt-2 min-h-24 w-full rounded-lg border border-neutral-200 p-3 text-sm outline-none focus:border-neutral-950" placeholder="Como foi o treino hoje?" />
+        <div className="mt-3 flex gap-3 rounded-[16px] border border-blue-100 bg-blue-50 p-3 text-sm text-blue-950">
+          <Bell className="mt-0.5 size-4 shrink-0 text-[var(--blue)]" />
+          <p className="leading-6">
+            Lembrete: finalize o treino so depois de marcar as series concluidas e registrar como foi o treino. Esse feedback ajuda seu personal a ajustar o proximo treino.
+          </p>
+        </div>
         <PrimaryButton className="mt-3 w-full">Concluir treino</PrimaryButton>
       </Card>
     </section>
